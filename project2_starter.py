@@ -58,25 +58,22 @@ class Character:
     """Base class for all characters."""
 
     def __init__(self, name, health, strength, magic):
-        # Set up basic character attributes
         self.name = name
         self.health = health
         self.strength = strength
         self.magic = magic
 
     def attack(self, target):
-        # Basic attack using strength only
         damage = self.strength
         print(f"{self.name} attacks {target.name} for {damage} damage.")
         target.take_damage(damage)
 
     def take_damage(self, damage):
-        # Subtract damage from health, but don't go below 0
+        # AI Concept: State update — reflects internal agent state change
         self.health = max(0, self.health - damage)
         print(f"{self.name} takes {damage} damage. Health now: {self.health}")
 
     def display_stats(self):
-        # Print character's current stats
         print(f"Name: {self.name} | Health: {self.health} | Strength: {self.strength} | Magic: {self.magic}")
 
 
@@ -84,15 +81,12 @@ class Player(Character):
     """Intermediate class for player-controlled characters."""
 
     def __init__(self, name, character_class, health, strength, magic):
-        # Call the base Character constructor
         super().__init__(name, health, strength, magic)
-        # Add player-specific attributes
         self.character_class = character_class
         self.level = 1
-        self.experience = 0
+        self.experience = 0  # AI Concept: Learning metric — tracks agent progress
 
     def display_stats(self):
-        # Show both base stats and player-specific info
         super().display_stats()
         print(f"Class: {self.character_class} | Level: {self.level} | XP: {self.experience}")
 
@@ -101,17 +95,15 @@ class Warrior(Player):
     """Warrior class with Power Strike ability."""
 
     def __init__(self, name):
-        # Initialize Warrior with high health and strength, low magic
         super().__init__(name, "Warrior", 120, 15, 5)
 
     def attack(self, target):
-        # Warrior's attack does extra damage (+5)
         damage = self.strength + 5
         print(f"{self.name} performs a Warrior attack for {damage} damage!")
         target.take_damage(damage)
 
     def power_strike(self, target):
-        # Special ability: Power Strike does strength + 15 damage
+        # AI Concept: Rule-based decision — triggers enhanced action
         damage = self.strength + 15
         print(f"{self.name} uses Power Strike on {target.name} for {damage} damage!")
         target.take_damage(damage)
@@ -121,17 +113,15 @@ class Mage(Player):
     """Mage class with Fireball ability."""
 
     def __init__(self, name):
-        # Initialize Mage with high magic, low health and strength
         super().__init__(name, "Mage", 80, 8, 20)
 
     def attack(self, target):
-        # Mage's attack uses magic instead of strength
+        # AI Concept: Polymorphism — behavior changes based on class type
         damage = self.magic
         print(f"{self.name} casts a magic attack for {damage} damage!")
         target.take_damage(damage)
 
     def fireball(self, target):
-        # Special ability: Fireball does magic + 20 damage
         damage = self.magic + 20
         print(f"{self.name} casts Fireball on {target.name} for {damage} damage!")
         target.take_damage(damage)
@@ -141,21 +131,19 @@ class Rogue(Player):
     """Rogue class with critical hit chance & Sneak Attack."""
 
     def __init__(self, name):
-        # Initialize Rogue with balanced stats
         super().__init__(name, "Rogue", 90, 12, 10)
 
     def attack(self, target):
-        # Rogue has a 30% chance to land a critical hit (double damage)
         damage = self.strength
         if random.randint(1, 10) <= 3:
             damage *= 2
+            # AI Concept: Stochastic behavior — introduces randomness into decision-making
             print(f"CRITICAL HIT! {self.name} attacks for {damage} damage!")
         else:
             print(f"{self.name} attacks {target.name} for {damage} damage!")
         target.take_damage(damage)
 
     def sneak_attack(self, target):
-        # Special ability: Sneak Attack always does double strength damage
         damage = self.strength * 2
         print(f"{self.name} performs Sneak Attack on {target.name} for {damage} damage!")
         target.take_damage(damage)
@@ -165,58 +153,33 @@ class Weapon:
     """Weapon used via composition."""
 
     def __init__(self, name, damage_bonus):
-        # Each weapon has a name and a damage bonus
         self.name = name
-        self.damage_bonus = damage_bonus
+        self.damage_bonus = damage_bonus  # AI Concept: Modular enhancement — external tool integration
 
     def display_info(self):
-        # Show weapon details
         print(f"Weapon: {self.name} | Damage Bonus: {self.damage_bonus}")
 
 
-# ============================================================================
-# MAIN PROGRAM (SAFE FOR EXECUTION — DOES NOT BREAK TESTS)
-# ============================================================================
+class SimpleBattle:
+    """Simulates a basic turn-based battle between two characters."""
 
-if __name__ == "__main__":
-    print("=== CHARACTER ABILITIES SHOWCASE ===")
+    def __init__(self, char1, char2):
+        self.char1 = char1
+        self.char2 = char2
 
-    # Create one of each player class
-    warrior = Warrior("Sir Galahad")
-    mage = Mage("Merlin")
-    rogue = Rogue("Robin Hood")
+    def fight(self):
+        # AI Concept: Agent interaction loop — simulates turn-based decision-making
+        print(f"\nBattle Start: {self.char1.name} vs {self.char2.name}")
+        while self.char1.health > 0 and self.char2.health > 0:
+            self.char1.attack(self.char2)
+            if self.char2.health <= 0:
+                print(f"{self.char2.name} has been defeated!")
+                break
+            self.char2.attack(self.char1)
+            if self.char1.health <= 0:
+                print(f"{self.char1.name} has been defeated!")
+                break
+        print("Battle Over.")
 
-    print("\n📊 Character Stats:")
-    # Show stats for each character
-    warrior.display_stats()
-    mage.display_stats()
-    rogue.display_stats()
 
-    print("\n⚔️ Testing Polymorphism:")
-    # Create a dummy target to test attacks
-    dummy = Character("Dummy", 100, 0, 0)
-
-    # Each character attacks the dummy using their overridden attack method
-    for character in [warrior, mage, rogue]:
-        print(f"\n{character.name} attacks the dummy:")
-        character.attack(dummy)
-        dummy.health = 100  # Reset dummy health after each attack
-
-    print("\n✨ Special Abilities:")
-    # Test each class's special ability
-    warrior.power_strike(Character("Enemy1", 50, 0, 0))
-    mage.fireball(Character("Enemy2", 50, 0, 0))
-    rogue.sneak_attack(Character("Enemy3", 50, 0, 0))
-
-    print("\n🗡️ Weapons:")
-    # Create and display weapons
-    Weapon("Iron Sword", 10).display_info()
-    Weapon("Magic Staff", 15).display_info()
-    Weapon("Steel Dagger", 8).display_info()
-
-    print("\n⚔️ Battle Test:")
-    # Run a simple battle between two characters
-    SimpleBattle(warrior, mage).fight()
-
-    print("\n✅ Testing complete!")
 
